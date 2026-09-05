@@ -16,9 +16,9 @@ AUDIO_DIR = Path("audio")
 
 class KokoroProviderImpl(TTSProvider):
 
-    def generate(self, bookTitle: str, texts: list[str]) -> TTSTranscription:
+    def generate(self, chunk_id: str, texts: list[str]) -> TTSTranscription:
         LoggerService.log_info(
-            "Generating TTS audio for '%s' with %d phrases", bookTitle, len(texts)
+            "Generating TTS audio for '%s' with %d phrases", chunk_id, len(texts)
         )
 
         AUDIO_DIR.mkdir(exist_ok=True)
@@ -35,7 +35,7 @@ class KokoroProviderImpl(TTSProvider):
 
         if clips:
             final_audio = np.concatenate(clips)
-            audio_path = str(AUDIO_DIR / f"{bookTitle}.wav")
+            audio_path = str(AUDIO_DIR / f"{chunk_id}.wav")
             sf.write(audio_path, final_audio, SAMPLE_RATE)
             LoggerService.log_info(
                 "TTS audio written to '%s' (%.2fs, %d phrases)",
@@ -46,7 +46,7 @@ class KokoroProviderImpl(TTSProvider):
         else:
             audio_path = ""
             LoggerService.log_warning(
-                "No audio generated for '%s' (no spoken phrases)", bookTitle
+                "No audio generated for '%s' (no spoken phrases)", chunk_id
             )
 
         return TTSTranscription(audio_path=audio_path, durations=durations)

@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, AsyncIterator
 
-from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
+from log.loggerService import LoggerService
+
 from .config import DatabaseConfig
 from .connection import create_pool
-
-logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -26,11 +23,15 @@ class Database:
         return self._pool
 
     async def open(self) -> None:
+        LoggerService.log_info("Opening PostgreSQL connection pool")
         await self._pool.open()
+        LoggerService.log_info("PostgreSQL connection pool opened")
 
     async def close(self) -> None:
         if not self._pool.closed:
+            LoggerService.log_info("Closing PostgreSQL connection pool")
             await self._pool.close()
+            LoggerService.log_info("PostgreSQL connection pool closed")
 
     @asynccontextmanager
     async def connection(self):
@@ -62,8 +63,8 @@ class Database:
                 broken = await self._pool.check()
 
                 if broken:
-                    logger.warning(
-                        "conexões quebradas recicladas: %s",
+                    LoggerService.log_warning(
+                        "Broken PostgreSQL connections recycled: %s",
                         broken,
                     )
 
@@ -71,7 +72,9 @@ class Database:
                 raise
 
             except Exception:
-                logger.exception("erro verificando pool do PostgreSQL")
+                LoggerService.log_exception(
+                    "Error checking the PostgreSQL connection pool"
+                )
 
             try:
                 await asyncio.wait_for(

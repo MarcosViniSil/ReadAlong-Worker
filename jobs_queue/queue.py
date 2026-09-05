@@ -5,6 +5,8 @@ import logging
 
 import redis.asyncio as redis
 
+from log.loggerService import LoggerService
+
 from .config import QueueConfig
 from .connection import create_redis_client
 
@@ -26,7 +28,6 @@ class AudioQueue:
         await self._redis.aclose()
 
     async def ping(self) -> bool:
-
         return await self._redis.ping()
 
     async def consume(
@@ -38,6 +39,8 @@ class AudioQueue:
             timeout=self._config.queue_block_timeout,
         )
 
+        LoggerService.log_info("Message received in the queue: %s", result)
+
         if result is None:
             return None
 
@@ -47,8 +50,8 @@ class AudioQueue:
             return json.loads(raw_message)
 
         except json.JSONDecodeError:
-            logger.exception(
-                "Mensagem inválida recebida da fila: %s",
+            LoggerService.log_exception(
+                "Invalid message received: %s",
                 raw_message,
             )
 

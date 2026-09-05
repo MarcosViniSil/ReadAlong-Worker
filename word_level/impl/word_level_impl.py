@@ -3,12 +3,15 @@ from word_level.word_level_provider import WordLevelProvider
 import whisperx
 import gc
 import warnings
+import uuid
 
 warnings.filterwarnings("ignore")
 
 
 class WordLevelImpl(WordLevelProvider):
-    def generate_word_mapping(self, audio_path: str) -> WordLevelTranscription:
+    def generate_word_mapping(
+        self, audio_path: str, chunk_id: str
+    ) -> WordLevelTranscription:
         device = "cpu"
         model_size = "small"  # Options: "tiny", "base", "small", "medium", "large"
         # tiny: ~75MB, base: ~140MB, small: ~460MB, medium: ~1.5GB, large: ~3GB
@@ -46,12 +49,6 @@ class WordLevelImpl(WordLevelProvider):
         gc.collect()
 
         word_level_transcription = WordLevelTranscription()
-        print("results ", result)
         word_level_transcription.segments = result["segments"]
-
-        import json
-
-        with open("transcription_output.json", "w") as f:
-            json.dump(result, f, indent=2, ensure_ascii=False)
 
         return word_level_transcription

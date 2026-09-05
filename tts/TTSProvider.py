@@ -6,5 +6,5 @@ from models.TTSTranscription import TTSTranscription
 class TTSProvider(ABC):
 
     @abstractmethod
-    def generate(self, bookTitle: str, texts: list[str]) -> TTSTranscription:
+    def generate(self, chunk_id: str, texts: list[str]) -> TTSTranscription:
         pass

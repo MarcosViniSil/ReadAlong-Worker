@@ -54,7 +54,6 @@ class JobRepositoryImpl(JobRepositoryProvider):
 
         return self._job_from_row(row)
 
-
     async def complete(
         self,
         job_id: str,
