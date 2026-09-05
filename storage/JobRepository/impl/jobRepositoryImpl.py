@@ -1,9 +1,7 @@
-# storage/jobRepository/jobRepository.py
-
 from models.Job import Job
-from models.enum import JobType
+from models.enum.JobType import JobType
 from models.enum.BookStatus import BookStatus
-from storage.config_db.connection import Database
+from storage.config_db.database import Database
 from storage.JobRepository.jobRepositoryProvider import JobRepositoryProvider
 
 
@@ -33,17 +31,15 @@ class JobRepositoryImpl(JobRepositoryProvider):
     async def claim(
         self,
         job_id: str,
-        worker_id: str,
     ) -> Job | None:
 
         async with self._db.transaction() as tx:
 
-            row = await tx.fetchone(
+            cursor = await tx.execute(
                 """
                 UPDATE jobs
                 SET
                     status = 'processing',
-                    worker_id = %s::uuid,
                     started_at = NOW(),
                     attempt = attempt + 1
                 WHERE
@@ -51,20 +47,22 @@ class JobRepositoryImpl(JobRepositoryProvider):
                     AND status = 'pending'
                 RETURNING *
                 """,
-                [worker_id, job_id],
+                [job_id],
             )
 
+            row = await cursor.fetchone()
+
         return self._job_from_row(row)
+
 
     async def complete(
         self,
         job_id: str,
-        worker_id: str,
     ) -> Job:
 
         async with self._db.transaction() as tx:
 
-            row = await tx.fetchone(
+            cursor = await tx.execute(
                 """
                 UPDATE jobs
                 SET
@@ -72,12 +70,12 @@ class JobRepositoryImpl(JobRepositoryProvider):
                     finished_at = NOW()
                 WHERE
                     id = %s::uuid
-                    AND worker_id = %s::uuid
                     AND status = 'processing'
                 RETURNING id
                 """,
-                [job_id, worker_id],
+                [job_id],
             )
+            row = await cursor.fetchone()
 
             if row is None:
                 raise RuntimeError(f"Não foi possível completar o job {job_id}")
@@ -86,7 +84,6 @@ class JobRepositoryImpl(JobRepositoryProvider):
     async def fail(
         self,
         job_id: str,
-        worker_id: str,
         error_code: int | None,
         error_message: str,
     ) -> None:
@@ -103,13 +100,11 @@ class JobRepositoryImpl(JobRepositoryProvider):
                     error_message = %s
                 WHERE
                     id = %s::uuid
-                    AND worker_id = %s::uuid
                     AND status = 'processing'
                 """,
                 [
                     error_code,
                     error_message,
                     job_id,
-                    worker_id,
                 ],
             )
