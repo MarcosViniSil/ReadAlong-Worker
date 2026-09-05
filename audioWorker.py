@@ -2,6 +2,7 @@ import json
 import time
 from dataclasses import asdict
 import uuid
+from commom.commom import CommonData
 from jobs_queue.queue import AudioQueue
 from models.Job import Job
 from models.TTSTranscription import TTSTranscription
@@ -9,9 +10,11 @@ from models.chunk import Chunk
 from models.chunk_audio import ChunkAudio, ChunkWord
 from models.wordLevelTranscription import WordLevelTranscription
 from storage.JobRepository.jobRepositoryProvider import JobRepositoryProvider
+from storage.bucket.bucketProvider import BucketProvider
 from storage.chunkRepository.chunkRepositoryProvider import ChunkRepositoryProvider
 from tts.TTSProvider import TTSProvider
 from word_level.word_level_provider import WordLevelProvider
+
 
 
 class AudioWorker:
@@ -23,12 +26,14 @@ class AudioWorker:
         chunks: ChunkRepositoryProvider,
         audio_service: TTSProvider,
         word_level_service: WordLevelProvider,
+        bucket: BucketProvider
     ):
         self._queue = queue
         self._jobs = jobs
         self.chunks = chunks
         self.audio_service = audio_service
         self.word_level_service = word_level_service
+        self.bucket = bucket
 
     def generate_chunk_id_json(
         self,
@@ -95,14 +100,16 @@ class AudioWorker:
             if not job_id:
                 continue
 
+            worker_id: str = CommonData.get_worker_id()
+            if not worker_id:
+                continue
+            
             job: Job = await self._jobs.claim(
+                worker_id,
                 job_id=job_id,
             )
 
             if job is None:
-
-                # Outro worker já adquiriu o job
-                # ou ele não está mais pending.
                 continue
 
             chunk: Chunk = await self.chunks.get_by_id(job.chunk_id)

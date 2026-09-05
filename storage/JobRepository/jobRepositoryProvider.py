@@ -8,6 +8,7 @@ class JobRepositoryProvider(ABC):
     @abstractmethod
     async def claim(
         self,
+        worker_id: str,
         job_id: str,
     ): ...
 

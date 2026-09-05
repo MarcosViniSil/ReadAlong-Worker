@@ -30,6 +30,7 @@ class JobRepositoryImpl(JobRepositoryProvider):
 
     async def claim(
         self,
+        worker_id: str,
         job_id: str,
     ) -> Job | None:
 
@@ -41,13 +42,14 @@ class JobRepositoryImpl(JobRepositoryProvider):
                 SET
                     status = 'processing',
                     started_at = NOW(),
-                    attempt = attempt + 1
+                    attempt = attempt + 1,
+                    worker_id = %s::uuid
                 WHERE
                     id = %s::uuid
                     AND status = 'pending'
                 RETURNING *
                 """,
-                [job_id],
+                [worker_id,job_id],
             )
 
             row = await cursor.fetchone()

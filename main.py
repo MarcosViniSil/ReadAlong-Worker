@@ -4,6 +4,8 @@ from jobs_queue.config import QueueConfig
 from jobs_queue.queue import AudioQueue
 
 from audioWorker import AudioWorker
+from storage.bucket.config import load_bucket_config
+from storage.bucket.impl.bucketProviderImpl import BucketProviderImpl
 from storage.chunkRepository.impl.ChunkRepositoryImpl import ChunkRepositoryImpl
 from storage.config_db.connection import DatabaseConfig
 from storage.config_db.database import Database
@@ -30,6 +32,9 @@ async def main():
     audio_service = KokoroProviderImpl()
     word_level = WordLevelImpl()
 
+    bucket_settings = load_bucket_config()
+    bucket = BucketProviderImpl(bucket_settings)
+
     await db.open()
 
     try:
@@ -42,6 +47,7 @@ async def main():
             chunks=chunks,
             audio_service=audio_service,
             word_level_service=word_level,
+            bucket=bucket
         )
 
         await worker.run()
