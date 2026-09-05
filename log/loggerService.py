@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 currentDate = date.today()
 log_path = f"./log/{currentDate}.log"
 
-file_handler = logging.FileHandler(log_path,mode='a')
+file_handler = logging.FileHandler(log_path, mode="a")
 file_handler.setLevel(logging.INFO)
 
 
@@ -42,7 +42,9 @@ class LoggerService:
         logger.warning(message, *args, **kwargs)
 
     @staticmethod
-    def log_error(message: str, exc: Optional[BaseException] = None, *args: Any, **kwargs: Any) -> None:
+    def log_error(
+        message: str, exc: Optional[BaseException] = None, *args: Any, **kwargs: Any
+    ) -> None:
         if exc is not None:
             logger.error(message, *args, exc_info=True, **kwargs)
         else:

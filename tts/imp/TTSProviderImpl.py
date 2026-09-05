@@ -8,7 +8,7 @@ from log.loggerService import LoggerService
 from models.TTSTranscription import TTSTranscription
 from tts.TTSProvider import TTSProvider
 
-pipeline = KPipeline(lang_code='a')
+pipeline = KPipeline(lang_code="a")
 
 SAMPLE_RATE = 24000
 AUDIO_DIR = Path("audio")
@@ -18,8 +18,7 @@ class KokoroProviderImpl(TTSProvider):
 
     def generate(self, bookTitle: str, texts: list[str]) -> TTSTranscription:
         LoggerService.log_info(
-            "Generating TTS audio for '%s' with %d phrases",
-            bookTitle, len(texts)
+            "Generating TTS audio for '%s' with %d phrases", bookTitle, len(texts)
         )
 
         AUDIO_DIR.mkdir(exist_ok=True)
@@ -40,16 +39,20 @@ class KokoroProviderImpl(TTSProvider):
             sf.write(audio_path, final_audio, SAMPLE_RATE)
             LoggerService.log_info(
                 "TTS audio written to '%s' (%.2fs, %d phrases)",
-                audio_path, len(final_audio) / SAMPLE_RATE, len(clips)
+                audio_path,
+                len(final_audio) / SAMPLE_RATE,
+                len(clips),
             )
         else:
             audio_path = ""
-            LoggerService.log_warning("No audio generated for '%s' (no spoken phrases)", bookTitle)
+            LoggerService.log_warning(
+                "No audio generated for '%s' (no spoken phrases)", bookTitle
+            )
 
         return TTSTranscription(audio_path=audio_path, durations=durations)
 
     def _synthesize(self, text: str) -> np.ndarray | None:
-        generator = pipeline(text, voice='af_heart')
+        generator = pipeline(text, voice="af_heart")
         chunk_audios = [audio for _, _, audio in generator]
         if not chunk_audios:
             return None
