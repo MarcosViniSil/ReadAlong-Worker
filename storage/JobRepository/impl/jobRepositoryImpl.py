@@ -49,10 +49,11 @@ class JobRepositoryImpl(JobRepositoryProvider):
                     AND status = 'pending'
                 RETURNING *
                 """,
-                [worker_id,job_id],
+                [worker_id, job_id],
             )
 
             row = await cursor.fetchone()
+            print("row ", row)
 
         return self._job_from_row(row)
 
@@ -72,15 +73,13 @@ class JobRepositoryImpl(JobRepositoryProvider):
                 WHERE
                     id = %s::uuid
                     AND status = 'processing'
-                RETURNING id
+                RETURNING *
                 """,
                 [job_id],
             )
             row = await cursor.fetchone()
 
-            if row is None:
-                raise RuntimeError(f"Não foi possível completar o job {job_id}")
-        self._job_from_row(row)
+        return self._job_from_row(row)
 
     async def fail(
         self,

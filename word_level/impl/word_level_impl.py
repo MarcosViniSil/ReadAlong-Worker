@@ -9,9 +9,7 @@ warnings.filterwarnings("ignore")
 
 
 class WordLevelImpl(WordLevelProvider):
-    def generate_word_mapping(
-        self, audio_path: str, chunk_id: str
-    ) -> WordLevelTranscription:
+    def generate_word_mapping(self, audio_path: str) -> WordLevelTranscription:
         device = "cpu"
         model_size = "small"  # Options: "tiny", "base", "small", "medium", "large"
         # tiny: ~75MB, base: ~140MB, small: ~460MB, medium: ~1.5GB, large: ~3GB
