@@ -5,6 +5,7 @@ from datetime import datetime
 from dataclasses import asdict
 
 from common.common import CommonData
+from common.config import CHUNK_DIR
 from jobs_queue.queue import AudioQueue
 from log.loggerService import LoggerService
 from models.AudioAsset import AudioAsset
@@ -26,7 +27,6 @@ from storage.mediaManifestRepository.mediaManifestRepositoryProvider import Medi
 from tts.TTSProvider import TTSProvider
 from word_level.word_level_provider import WordLevelProvider
 
-CHUNK_DIR = Path("chunk")
 
 
 class AudioWorker:
@@ -473,8 +473,9 @@ class AudioWorker:
                         json_path_bucket,
                     )
 
-                    # Complete job
                     await self._jobs.complete(job.id)
+
+                    await self.chunks.update_status(chunk.id,BookStatus.COMPLETED)
 
                     LoggerService.log_info(
                         "Job completed successfully - Job ID: %s, Chunk ID: %s",
@@ -482,7 +483,6 @@ class AudioWorker:
                         chunk.id,
                     )
 
-                    # Cleanup local files
                     file_path_audio = Path(audio_path)
                     file_path_json = Path(chunk_json_path)
 

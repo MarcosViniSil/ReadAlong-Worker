@@ -29,3 +29,10 @@ class ChunkRepositoryImpl(ChunkRepositoryProvider):
             )
             row = await cursor.fetchone()
         return self._chunk_from_row(row) if row else None
+
+    async def update_status(self, chunk_id, status: BookStatus) -> None:
+        async with self._db.transaction() as tx:
+            await tx.execute(
+                "UPDATE chunks SET status = %s, updated_at = now() WHERE id = %s::uuid",
+                [str(status), chunk_id],
+            )

@@ -4,14 +4,16 @@ import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
 
+from common.config import AUDIO_DIR
 from log.loggerService import LoggerService
+
 from models.TTSTranscription import TTSTranscription
 from tts.TTSProvider import TTSProvider
+from tts.convertWav import convert_wav_to_mp3
 
 pipeline = KPipeline(lang_code="a")
 
 SAMPLE_RATE = 24000
-AUDIO_DIR = Path("audio")
 
 
 class KokoroProviderImpl(TTSProvider):
@@ -48,6 +50,10 @@ class KokoroProviderImpl(TTSProvider):
             LoggerService.log_warning(
                 "No audio generated for '%s' (no spoken phrases)", chunk_id
             )
+
+        mp3_path = convert_wav_to_mp3(audio_path)
+        if mp3_path:
+            audio_path = mp3_path
 
         return TTSTranscription(audio_path=audio_path, durations=durations)
 
