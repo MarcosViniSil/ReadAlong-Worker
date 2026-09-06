@@ -2,7 +2,6 @@ import asyncio
 
 from jobs_queue.config import QueueConfig
 from jobs_queue.queue import AudioQueue
-
 from audioWorker import AudioWorker
 from storage.audioAssetRepository.impl.audioAssetRepositoryImpl import (
     AudioAssetRepositoryImpl,
@@ -12,6 +11,7 @@ from storage.bucket.impl.bucketProviderImpl import BucketProviderImpl
 from storage.chunkRepository.impl.ChunkRepositoryImpl import ChunkRepositoryImpl
 from storage.config_db.connection import DatabaseConfig
 from storage.config_db.database import Database
+from storage.mediaManifestRepository.impl.mediaManifestRepositoryImpl import MediaManifestRepositoryRepositoryImpl
 from tts.imp.TTSProviderImpl import KokoroProviderImpl
 from storage.JobRepository.impl.jobRepositoryImpl import (
     JobRepositoryImpl,
@@ -32,6 +32,7 @@ async def main():
     jobs = JobRepositoryImpl(db)
     chunks = ChunkRepositoryImpl(db)
     audio_asset = AudioAssetRepositoryImpl(db)
+    media_manifest = MediaManifestRepositoryRepositoryImpl(db)
 
     audio_service = KokoroProviderImpl()
     word_level = WordLevelImpl()
@@ -53,6 +54,7 @@ async def main():
             word_level_service=word_level,
             bucket=bucket,
             audio_asset=audio_asset,
+            media_manifest=media_manifest
         )
 
         await worker.run()

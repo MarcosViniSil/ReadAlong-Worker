@@ -13,6 +13,7 @@ from models.TTSTranscription import TTSTranscription
 from models.chunk import Chunk
 from models.chunk_audio import ChunkAudio, ChunkWord
 from models.enum.BookStatus import BookStatus
+from models.mediaManifest import MediaManifest
 from models.wordLevelTranscription import WordLevelTranscription
 from storage.JobRepository.jobRepositoryProvider import JobRepositoryProvider
 from storage.audioAssetRepository.audioAssetRepositoryProvider import (
@@ -21,6 +22,7 @@ from storage.audioAssetRepository.audioAssetRepositoryProvider import (
 from storage.bucket.bucketProvider import BucketProvider
 from storage.bucket.impl.bucketProviderImpl import BucketProviderImpl
 from storage.chunkRepository.chunkRepositoryProvider import ChunkRepositoryProvider
+from storage.mediaManifestRepository.mediaManifestRepositoryProvider import MediaManifestRepositoryProvider
 from tts.TTSProvider import TTSProvider
 from word_level.word_level_provider import WordLevelProvider
 
@@ -38,6 +40,7 @@ class AudioWorker:
         word_level_service: WordLevelProvider,
         bucket: BucketProvider,
         audio_asset: AudioAssetRepositoryProvider,
+        media_manifest: MediaManifestRepositoryProvider,
     ):
         self._queue = queue
         self._jobs = jobs
@@ -46,6 +49,7 @@ class AudioWorker:
         self.word_level_service = word_level_service
         self.bucket = bucket
         self.audio_asset = audio_asset
+        self.media_manifest = media_manifest
 
         LoggerService.log_info("AudioWorker initialized successfully")
 
@@ -451,17 +455,17 @@ class AudioWorker:
                     )
 
                     # Create JSON asset
-                    json_asset = AudioAsset(
+                    json_asset = MediaManifest(
                         id=uuid.uuid4(),
+                        book_id=None,
                         chunk_id=chunk.id,
+                        type="Content-Type: application/json",
                         storage_key=json_path_bucket,
-                        format="json",
-                        size=json_size,
                         status=BookStatus.COMPLETED,
-                        created_at=datetime.now(),
+                        created_at= datetime.now()
                     )
 
-                    await self.audio_asset.create(json_asset)
+                    await self.media_manifest.create(json_asset)
 
                     LoggerService.log_debug(
                         "JSON asset created for chunk_id: %s - Storage key: %s",
