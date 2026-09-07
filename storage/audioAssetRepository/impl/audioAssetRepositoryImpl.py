@@ -17,6 +17,7 @@ class AudioAssetRepositoryImpl(AudioAssetRepositoryProvider):
         return AudioAsset(
             id=str(row["id"]),
             chunk_id=str(row["chunk_id"]),
+            page_id=str(row["page_id"]),
             storage_key=row["storage_key"],
             format=row["format"],
             size=row["size"],
@@ -28,12 +29,13 @@ class AudioAssetRepositoryImpl(AudioAssetRepositoryProvider):
         async with self._db.transaction() as tx:
             cursor = await tx.execute(
                 """
-                INSERT INTO audio_assets (chunk_id, storage_key, format, size, status)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO audio_assets (chunk_id,page_id, storage_key, format, size, status)
+                VALUES (%s, %s, %s,%s, %s, %s)
                 RETURNING *
                 """,
                 [
                     audio_asset.chunk_id,
+                    audio_asset.page_id,
                     audio_asset.storage_key,
                     audio_asset.format,
                     audio_asset.size,

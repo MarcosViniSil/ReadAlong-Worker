@@ -8,6 +8,7 @@ from models.enum import BookStatus
 class AudioAsset:
     id: str
     chunk_id: str
+    page_id: str
     storage_key: str
     format: str
     size: float

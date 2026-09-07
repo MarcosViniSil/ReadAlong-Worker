@@ -4,6 +4,7 @@ from pathlib import Path
 from jobs_queue.config import QueueConfig
 from jobs_queue.queue import AudioQueue
 from audioWorker import AudioWorker
+from metrics import run_metrics_server
 from storage.audioAssetRepository.impl.audioAssetRepositoryImpl import (
     AudioAssetRepositoryImpl,
 )
@@ -18,8 +19,6 @@ from storage.JobRepository.impl.jobRepositoryImpl import (
     JobRepositoryImpl,
 )
 from word_level.impl.word_level_impl import WordLevelImpl
-
-
 
 
 async def main():
@@ -44,7 +43,9 @@ async def main():
     bucket = BucketProviderImpl(bucket_settings)
 
     await db.open()
-
+    metrics_task = asyncio.create_task(
+        run_metrics_server()
+    )
     try:
 
         await queue.ping()
@@ -74,6 +75,15 @@ async def main():
         )
 
     finally:
+
+        stop_event.set()
+
+        metrics_task.cancel()
+
+        try:
+            await metrics_task
+        except asyncio.CancelledError:
+            pass
 
         await queue.close()
         await db.close()

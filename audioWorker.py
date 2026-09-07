@@ -319,6 +319,7 @@ class AudioWorker:
                     audio_asset = AudioAsset(
                         id=uuid.uuid4(),
                         chunk_id=chunk.id,
+                        page_id=None,
                         storage_key=audio_path_bucket,
                         format="AUDIO",
                         size=audio_size,
@@ -333,7 +334,6 @@ class AudioWorker:
                     # Create JSON asset
                     json_asset = MediaManifest(
                         id=uuid.uuid4(),
-                        book_id=None,
                         chunk_id=chunk.id,
                         type="Content-Type: application/json",
                         storage_key=json_path_bucket,

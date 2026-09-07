@@ -15,7 +15,6 @@ class MediaManifestRepositoryRepositoryImpl(AudioAssetRepositoryProvider):
     def _media_manifest_from_row(row: dict) -> MediaManifest:
         return MediaManifest(
             id=str(row["id"]),
-            book_id=str(row["book_id"]),
             chunk_id=row["chunk_id"],
             type=row["type"],
             storage_key=row["storage_key"],
@@ -27,12 +26,11 @@ class MediaManifestRepositoryRepositoryImpl(AudioAssetRepositoryProvider):
         async with self._db.transaction() as tx:
             cursor = await tx.execute(
                 """
-                INSERT INTO media_manifests (book_id, chunk_id, type, storage_key, status, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO media_manifests (chunk_id, type, storage_key, status, created_at)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING *
                 """,
                 [
-                    media_manifest.book_id,
                     media_manifest.chunk_id,
                     media_manifest.type,
                     media_manifest.storage_key,
